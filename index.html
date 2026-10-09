@@ -94,12 +94,20 @@
     $('status').textContent = 'Connecting to the screening form and loading your script…';
   }
 
+  function announceReady() {
+    if (initialized || !window.opener) return;
+    try { window.opener.postMessage({ type: 'AUDIO_CAPTURE_READY', requestId, language }, parentOrigin); } catch (err) {}
+  }
+  const readyInterval = window.setInterval(announceReady, 500);
+  announceReady();
+
   const initTimeout = window.setTimeout(() => {
     if (initialized) return;
+    window.clearInterval(readyInterval);
     $('recorderCard').classList.add('hidden');
     $('problemCard').classList.remove('hidden');
     $('problemText').textContent = 'The script could not be loaded from the screening form. Close this tab and click Open recorder again.';
-  }, 10000);
+  }, 15000);
 
   window.addEventListener('message', event => {
     if (event.source !== window.opener || event.origin !== parentOrigin) return;
@@ -109,12 +117,11 @@
     displayScript(data.script);
     initialized = true;
     window.clearTimeout(initTimeout);
+    window.clearInterval(readyInterval);
     $('recorderCard').classList.remove('hidden');
     $('status').className = 'status';
     $('status').textContent = 'Script loaded. Ready to record when you are.';
   });
-
-  try { window.opener.postMessage({ type: 'AUDIO_CAPTURE_READY', requestId, language }, parentOrigin); } catch (err) {}
 
   $('startBtn').addEventListener('click', startRecording);
   $('stopBtn').addEventListener('click', stopRecording);
