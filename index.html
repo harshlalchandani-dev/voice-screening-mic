@@ -8,7 +8,7 @@
   <style>
     :root{color-scheme:light;--blue:#2457c5;--navy:#17324d;--text:#182230;--muted:#667085;--line:#dfe6ef;--green:#137a4b;--red:#b42318;--soft:#f5f8fc}
     *{box-sizing:border-box}body{margin:0;background:#f2f5fa;color:var(--text);font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    main{max-width:620px;margin:0 auto;padding:20px 14px 36px}.hero{background:linear-gradient(125deg,#142d4a,#2c5cc5);color:#fff;padding:22px 20px;border-radius:18px}.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:800;opacity:.85}h1{font-size:clamp(23px,5vw,30px);line-height:1.2;margin:6px 0 8px}.hero p{margin:0;color:#e5edff;font-size:14px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:14px;box-shadow:0 4px 14px rgba(19,39,69,.035)}h2{font-size:18px;margin:0 0 8px}.muted{color:var(--muted);font-size:13px;margin:0 0 12px}.notice{background:#f4f7fb;border:1px solid #e4eaf2;border-radius:11px;padding:12px 13px;color:#475467;font-size:14px}.notice.warn{background:#fff8e8;border-color:#f5dfae;color:#7a4e00}.notice.error{background:#fff1f0;border-color:#ffd4d1;color:#912018}.notice.good{background:#e9f8ef;border-color:#bee8cc;color:#11643e}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}button{min-height:48px;border:0;border-radius:11px;padding:12px 16px;font:inherit;font-size:14px;font-weight:750;cursor:pointer}.primary{background:var(--blue);color:#fff}.secondary{background:#edf2f8;color:#23446a}.danger{background:#fff1f0;color:#912018}button:disabled{opacity:.45;cursor:not-allowed}audio{width:100%;margin-top:12px}details{border:1px solid var(--line);border-radius:11px;padding:12px 13px;margin-top:12px}summary{font-size:14px;font-weight:750;cursor:pointer}details ol{padding-left:20px;margin-bottom:0;font-size:13px}details li{margin:7px 0}.status{font-size:13px;margin-top:12px;color:var(--muted)}.status.good{color:var(--green);font-weight:700}.status.error{color:var(--red);font-weight:700}.footer{text-align:center;color:#7b8797;font-size:11px;margin-top:16px}.hidden{display:none!important}
+    main{max-width:620px;margin:0 auto;padding:20px 14px 36px}.hero{background:linear-gradient(125deg,#142d4a,#2c5cc5);color:#fff;padding:22px 20px;border-radius:18px}.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:800;opacity:.85}h1{font-size:clamp(23px,5vw,30px);line-height:1.2;margin:6px 0 8px}.hero p{margin:0;color:#e5edff;font-size:14px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:14px;box-shadow:0 4px 14px rgba(19,39,69,.035)}h2{font-size:18px;margin:0 0 8px}.muted{color:var(--muted);font-size:13px;margin:0 0 12px}.notice{background:#f4f7fb;border:1px solid #e4eaf2;border-radius:11px;padding:12px 13px;color:#475467;font-size:14px}.notice.warn{background:#fff8e8;border-color:#f5dfae;color:#7a4e00}.notice.error{background:#fff1f0;border-color:#ffd4d1;color:#912018}.notice.good{background:#e9f8ef;border-color:#bee8cc;color:#11643e}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}button{min-height:48px;border:0;border-radius:11px;padding:12px 16px;font:inherit;font-size:14px;font-weight:750;cursor:pointer}.primary{background:var(--blue);color:#fff}.secondary{background:#edf2f8;color:#23446a}.danger{background:#fff1f0;color:#912018}button:disabled{opacity:.45;cursor:not-allowed}audio{width:100%;margin-top:12px}details{border:1px solid var(--line);border-radius:11px;padding:12px 13px;margin-top:12px}summary{font-size:14px;font-weight:750;cursor:pointer}.script-text{white-space:pre-wrap;overflow-wrap:anywhere;background:#f4f7fb;border:1px solid #e4eaf2;border-radius:11px;padding:15px;font-size:18px;line-height:1.85;color:#182230}details ol{padding-left:20px;margin-bottom:0;font-size:13px}details li{margin:7px 0}.status{font-size:13px;margin-top:12px;color:var(--muted)}.status.good{color:var(--green);font-weight:700}.status.error{color:var(--red);font-weight:700}.footer{text-align:center;color:#7b8797;font-size:11px;margin-top:16px}.hidden{display:none!important}
   </style>
 </head>
 <body>
@@ -18,10 +18,15 @@
     <h1 id="title">Record your voice sample</h1>
     <p>This is a temporary recording tab. Your recording will be sent back to the application form when you choose “Use this recording”.</p>
   </header>
+  <section class="card hidden" id="scriptCard">
+    <h2 id="scriptHeading">Read this script</h2>
+    <p class="muted">Read the passage below naturally and clearly while recording. Do not read the instructions aloud.</p>
+    <div id="scriptText" class="script-text" lang="und"></div>
+  </section>
   <section class="card" id="recorderCard">
     <h2 id="languageTitle">Voice sample</h2>
     <p class="muted">Keep this tab open. When your browser asks for microphone permission, choose <strong>Allow</strong>. The recording starts only after you press the button below.</p>
-    <div class="notice">1. Click <strong>Start recording</strong>.<br>2. Choose <strong>Allow</strong> if your browser asks.<br>3. Read the script on the previous tab, then return here and press <strong>Stop recording</strong>.<br>4. Listen to your sample and select <strong>Use this recording</strong>.</div>
+    <div class="notice">1. Click <strong>Start recording</strong>.<br>2. Choose <strong>Allow</strong> if your browser asks.<br>3. Read the script shown above while recording, then press <strong>Stop recording</strong>.<br>4. Listen to your sample and select <strong>Use this recording</strong>.</div>
     <div class="actions">
       <button id="startBtn" class="primary" type="button">Start recording</button>
       <button id="stopBtn" class="secondary hidden" type="button" disabled>Stop recording</button>
@@ -54,8 +59,9 @@
   const params = new URLSearchParams(window.location.search);
   const requestId = params.get('requestId') || '';
   const language = params.get('language') || '';
+  let scriptText = params.get('script') || ''; // New versions receive longer scripts through postMessage.
   const parentOrigin = params.get('parentOrigin') || '';
-  const maxSeconds = Math.max(10, Math.min(60, Number(params.get('maxSeconds') || 60)));
+  const maxSeconds = Math.max(10, Math.min(120, Number(params.get('maxSeconds') || 120)));
   const maxBytes = Math.max(256 * 1024, Math.min(4 * 1024 * 1024, Number(params.get('maxBytes') || (4 * 1024 * 1024))));
   const $ = id => document.getElementById(id);
   const allowedParent = parentOrigin === 'https://script.google.com' || /^https:\/\/(?:[a-z0-9-]+\.)*googleusercontent\.com$/i.test(parentOrigin);
@@ -64,11 +70,51 @@
   $('languageTitle').textContent = language ? language + ' voice sample' : 'Voice sample';
   $('title').textContent = language ? 'Record your ' + language + ' sample' : 'Record your voice sample';
 
+  function displayScript(text) {
+    scriptText = text;
+    $('scriptHeading').textContent = language + ' script';
+    $('scriptText').textContent = scriptText;
+    $('scriptText').lang = ({Gujarati:'gu', Punjabi:'pa', Kannada:'kn', Marathi:'mr', Odia:'or', Tamil:'ta'})[language] || 'und';
+    $('scriptCard').classList.remove('hidden');
+  }
+
   if (!requestId || !language || !allowedParent || !window.opener) {
     $('recorderCard').classList.add('hidden');
     $('problemCard').classList.remove('hidden');
     return;
   }
+
+  let initialized = false;
+  if (scriptText) {
+    displayScript(scriptText);
+    initialized = true;
+  } else {
+    $('scriptCard').classList.add('hidden');
+    $('recorderCard').classList.add('hidden');
+    $('status').textContent = 'Connecting to the screening form and loading your script…';
+  }
+
+  const initTimeout = window.setTimeout(() => {
+    if (initialized) return;
+    $('recorderCard').classList.add('hidden');
+    $('problemCard').classList.remove('hidden');
+    $('problemText').textContent = 'The script could not be loaded from the screening form. Close this tab and click Open recorder again.';
+  }, 10000);
+
+  window.addEventListener('message', event => {
+    if (event.source !== window.opener || event.origin !== parentOrigin) return;
+    const data = event.data;
+    if (!data || data.type !== 'AUDIO_CAPTURE_INIT' || data.requestId !== requestId || data.language !== language) return;
+    if (typeof data.script !== 'string' || !data.script.trim()) return;
+    displayScript(data.script);
+    initialized = true;
+    window.clearTimeout(initTimeout);
+    $('recorderCard').classList.remove('hidden');
+    $('status').className = 'status';
+    $('status').textContent = 'Script loaded. Ready to record when you are.';
+  });
+
+  try { window.opener.postMessage({ type: 'AUDIO_CAPTURE_READY', requestId, language }, parentOrigin); } catch (err) {}
 
   $('startBtn').addEventListener('click', startRecording);
   $('stopBtn').addEventListener('click', stopRecording);
@@ -77,6 +123,7 @@
   $('cancelBtn').addEventListener('click', cancelAndReturn);
 
   async function startRecording() {
+    if (!initialized || !scriptText) { $('status').className = 'status error'; $('status').textContent = 'Please wait for the script to load before recording.'; return; }
     if (recorder && recorder.state !== 'inactive') return;
     $('permissionHelp').classList.add('hidden');
     $('status').className = 'status';
