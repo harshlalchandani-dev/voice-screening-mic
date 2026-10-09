@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Voice Sample Recorder</title>
+  <style>
+    :root{color-scheme:light;--blue:#2457c5;--navy:#17324d;--text:#182230;--muted:#667085;--line:#dfe6ef;--green:#137a4b;--red:#b42318;--soft:#f5f8fc}
+    *{box-sizing:border-box}body{margin:0;background:#f2f5fa;color:var(--text);font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    main{max-width:620px;margin:0 auto;padding:20px 14px 36px}.hero{background:linear-gradient(125deg,#142d4a,#2c5cc5);color:#fff;padding:22px 20px;border-radius:18px}.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:800;opacity:.85}h1{font-size:clamp(23px,5vw,30px);line-height:1.2;margin:6px 0 8px}.hero p{margin:0;color:#e5edff;font-size:14px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:14px;box-shadow:0 4px 14px rgba(19,39,69,.035)}h2{font-size:18px;margin:0 0 8px}.muted{color:var(--muted);font-size:13px;margin:0 0 12px}.notice{background:#f4f7fb;border:1px solid #e4eaf2;border-radius:11px;padding:12px 13px;color:#475467;font-size:14px}.notice.warn{background:#fff8e8;border-color:#f5dfae;color:#7a4e00}.notice.error{background:#fff1f0;border-color:#ffd4d1;color:#912018}.notice.good{background:#e9f8ef;border-color:#bee8cc;color:#11643e}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}button{min-height:48px;border:0;border-radius:11px;padding:12px 16px;font:inherit;font-size:14px;font-weight:750;cursor:pointer}.primary{background:var(--blue);color:#fff}.secondary{background:#edf2f8;color:#23446a}.danger{background:#fff1f0;color:#912018}button:disabled{opacity:.45;cursor:not-allowed}audio{width:100%;margin-top:12px}details{border:1px solid var(--line);border-radius:11px;padding:12px 13px;margin-top:12px}summary{font-size:14px;font-weight:750;cursor:pointer}details ol{padding-left:20px;margin-bottom:0;font-size:13px}details li{margin:7px 0}.status{font-size:13px;margin-top:12px;color:var(--muted)}.status.good{color:var(--green);font-weight:700}.status.error{color:var(--red);font-weight:700}.footer{text-align:center;color:#7b8797;font-size:11px;margin-top:16px}.hidden{display:none!important}
+  </style>
+</head>
+<body>
+<main>
+  <header class="hero">
+    <div class="eyebrow">Voice collection screening</div>
+    <h1 id="title">Record your voice sample</h1>
+    <p>This is a temporary recording tab. Your recording will be sent back to the application form when you choose “Use this recording”.</p>
+  </header>
+  <section class="card" id="recorderCard">
+    <h2 id="languageTitle">Voice sample</h2>
+    <p class="muted">Keep this tab open. When your browser asks for microphone permission, choose <strong>Allow</strong>. The recording starts only after you press the button below.</p>
+    <div class="notice">1. Click <strong>Start recording</strong>.<br>2. Choose <strong>Allow</strong> if your browser asks.<br>3. Read the script on the previous tab, then return here and press <strong>Stop recording</strong>.<br>4. Listen to your sample and select <strong>Use this recording</strong>.</div>
+    <div class="actions">
+      <button id="startBtn" class="primary" type="button">Start recording</button>
+      <button id="stopBtn" class="secondary hidden" type="button" disabled>Stop recording</button>
+      <button id="useBtn" class="primary hidden" type="button" disabled>Use this recording</button>
+      <button id="redoBtn" class="secondary hidden" type="button">Record again</button>
+      <button id="cancelBtn" class="danger" type="button">Cancel and return</button>
+    </div>
+    <div id="status" class="status" role="status" aria-live="polite">Ready when you are.</div>
+    <audio id="preview" class="hidden" controls preload="metadata"></audio>
+    <div id="permissionHelp" class="notice error hidden" style="margin-top:12px" role="alert"></div>
+    <details id="helpDetails">
+      <summary>Microphone prompt did not appear? Tap here for help</summary>
+      <ol>
+        <li><strong>Chrome on a computer:</strong> click the site controls icon to the left of the web address, open <em>Site settings</em>, set <em>Microphone</em> to <em>Allow</em>, then reload this recorder tab.</li>
+        <li><strong>Chrome on Android:</strong> tap the icon to the left of the web address, open site permissions, allow the microphone, then reload this tab.</li>
+        <li><strong>Safari on iPhone/iPad:</strong> open this link in Safari, tap the <em>aA</em> or page menu, open <em>Website Settings</em>, and allow microphone access. Also check the device's Settings if needed.</li>
+        <li>Make sure the device has a microphone and that another app is not exclusively using it.</li>
+      </ol>
+      <p class="muted" style="margin:10px 0 0">If the microphone is already set to Allow, reload this tab and press Start recording again.</p>
+    </details>
+  </section>
+  <section id="problemCard" class="card hidden">
+    <h2>Cannot start this recorder</h2>
+    <p id="problemText" class="muted">This recording tab was not opened from the screening form. Close it and return to the form, then use its Open recorder button.</p>
+  </section>
+  <p class="footer">Privacy: this page does not upload or save the audio. It returns the recording to the screening form, which uploads it to the project's private Google Drive when the applicant submits.</p>
+</main>
+<script>
+(() => {
+  const params = new URLSearchParams(window.location.search);
+  const requestId = params.get('requestId') || '';
+  const language = params.get('language') || '';
+  const parentOrigin = params.get('parentOrigin') || '';
+  const maxSeconds = Math.max(10, Math.min(60, Number(params.get('maxSeconds') || 60)));
+  const maxBytes = Math.max(256 * 1024, Math.min(4 * 1024 * 1024, Number(params.get('maxBytes') || (4 * 1024 * 1024))));
+  const $ = id => document.getElementById(id);
+  const allowedParent = parentOrigin === 'https://script.google.com' || /^https:\/\/(?:[a-z0-9-]+\.)*googleusercontent\.com$/i.test(parentOrigin);
+  let stream = null, recorder = null, chunks = [], startedAt = 0, timer = null, lastBlob = null, lastMime = 'audio/webm', lastDuration = 0, previewUrl = null;
+
+  $('languageTitle').textContent = language ? language + ' voice sample' : 'Voice sample';
+  $('title').textContent = language ? 'Record your ' + language + ' sample' : 'Record your voice sample';
+
+  if (!requestId || !language || !allowedParent || !window.opener) {
+    $('recorderCard').classList.add('hidden');
+    $('problemCard').classList.remove('hidden');
+    return;
+  }
+
+  $('startBtn').addEventListener('click', startRecording);
+  $('stopBtn').addEventListener('click', stopRecording);
+  $('useBtn').addEventListener('click', returnRecording);
+  $('redoBtn').addEventListener('click', resetForRetake);
+  $('cancelBtn').addEventListener('click', cancelAndReturn);
+
+  async function startRecording() {
+    if (recorder && recorder.state !== 'inactive') return;
+    $('permissionHelp').classList.add('hidden');
+    $('status').className = 'status';
+    $('status').textContent = 'Requesting microphone access…';
+    $('startBtn').disabled = true;
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+        throw new Error('This browser does not support in-browser recording. Please open the link in a recent version of Chrome or Safari.');
+      }
+      stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+      const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
+      const preferred = types.find(type => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(type));
+      try { recorder = preferred ? new MediaRecorder(stream, { mimeType: preferred, audioBitsPerSecond: 48000 }) : new MediaRecorder(stream, { audioBitsPerSecond: 48000 }); }
+      catch (err) { recorder = new MediaRecorder(stream); }
+      chunks = []; startedAt = Date.now(); lastBlob = null;
+      recorder.ondataavailable = event => { if (event.data && event.data.size) chunks.push(event.data); };
+      recorder.onerror = () => { $('status').className = 'status error'; $('status').textContent = 'A recording error occurred. Please try again.'; stopRecording(); };
+      recorder.onstop = finishRecording;
+      recorder.start(250);
+      $('startBtn').classList.add('hidden');
+      $('stopBtn').classList.remove('hidden'); $('stopBtn').disabled = false;
+      $('useBtn').classList.add('hidden'); $('redoBtn').classList.add('hidden');
+      $('status').className = 'status error'; $('status').textContent = '● Recording — 00:00';
+      timer = window.setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+        $('status').textContent = '● Recording — ' + formatTime(elapsed) + ' · ' + Math.max(0, maxSeconds - elapsed) + ' seconds left';
+        if (elapsed >= maxSeconds) stopRecording();
+      }, 250);
+    } catch (err) {
+      stopTracks(); $('startBtn').disabled = false;
+      $('status').className = 'status error';
+      const permissionProblem = err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError' || err.name === 'SecurityError');
+      $('status').textContent = permissionProblem ? 'Microphone access was not allowed.' : (err && err.message ? err.message : 'Could not access the microphone.');
+      if (permissionProblem) {
+        $('permissionHelp').textContent = 'The browser did not allow microphone access. If no permission prompt appeared, it may remember a previous Block choice. Open “Microphone prompt did not appear? Tap here for help” below, allow the microphone for this site, reload this tab, and try again.';
+        $('permissionHelp').classList.remove('hidden');
+        $('helpDetails').open = true;
+      }
+    }
+  }
+
+  function stopRecording() {
+    if (timer) { clearInterval(timer); timer = null; }
+    if (recorder && recorder.state !== 'inactive') recorder.stop();
+  }
+
+  function finishRecording() {
+    lastDuration = Math.max(1, Math.ceil((Date.now() - startedAt) / 1000));
+    lastMime = (recorder && recorder.mimeType) || (chunks[0] && chunks[0].type) || 'audio/webm';
+    lastBlob = new Blob(chunks, { type: lastMime });
+    stopTracks();
+    $('stopBtn').classList.add('hidden');
+    $('startBtn').classList.remove('hidden'); $('startBtn').disabled = false;
+    if (lastBlob.size < 1000) {
+      lastBlob = null;
+      $('status').className = 'status error'; $('status').textContent = 'The recording was empty or too short. Please record again.';
+      $('startBtn').textContent = 'Start recording again';
+      return;
+    }
+    if (lastBlob.size > maxBytes) {
+      lastBlob = null;
+      $('status').className = 'status error'; $('status').textContent = 'This recording is too large. Please record a shorter sample.';
+      $('startBtn').textContent = 'Start recording again';
+      return;
+    }
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    previewUrl = URL.createObjectURL(lastBlob);
+    $('preview').src = previewUrl; $('preview').classList.remove('hidden');
+    $('useBtn').classList.remove('hidden'); $('useBtn').disabled = false;
+    $('redoBtn').classList.remove('hidden');
+    $('startBtn').classList.add('hidden');
+    $('status').className = 'status good'; $('status').textContent = 'Recording ready · ' + formatTime(lastDuration) + '. Listen before using it.';
+  }
+
+  function resetForRetake() {
+    lastBlob = null;
+    if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
+    $('preview').removeAttribute('src'); $('preview').classList.add('hidden');
+    $('useBtn').classList.add('hidden'); $('redoBtn').classList.add('hidden');
+    $('startBtn').classList.remove('hidden'); $('startBtn').textContent = 'Start recording'; $('startBtn').disabled = false;
+    $('status').className = 'status'; $('status').textContent = 'Ready to record again.';
+  }
+
+  function returnRecording() {
+    if (!lastBlob || !window.opener) {
+      $('status').className = 'status error'; $('status').textContent = 'No recording is ready. Record a sample first.'; return;
+    }
+    $('useBtn').disabled = true; $('redoBtn').disabled = true; $('cancelBtn').disabled = true;
+    $('status').className = 'status'; $('status').textContent = 'Sending the recording back to the application…';
+    const reader = new FileReader();
+    reader.onerror = () => { $('status').className = 'status error'; $('status').textContent = 'Could not prepare the audio. Please try again.'; $('useBtn').disabled = false; $('redoBtn').disabled = false; $('cancelBtn').disabled = false; };
+    reader.onload = () => {
+      try {
+        window.opener.postMessage({ type: 'AUDIO_CAPTURE_SUCCESS', requestId, language, dataUrl: reader.result, mimeType: lastMime, durationSeconds: lastDuration }, parentOrigin);
+        $('status').className = 'status good'; $('status').textContent = 'Sample sent. Returning to your application…';
+        window.setTimeout(() => window.close(), 400);
+      } catch (err) {
+        $('status').className = 'status error'; $('status').textContent = 'Could not return the recording. Keep this tab open and contact the project team.';
+        $('useBtn').disabled = false; $('redoBtn').disabled = false; $('cancelBtn').disabled = false;
+      }
+    };
+    reader.readAsDataURL(lastBlob);
+  }
+
+  function cancelAndReturn() {
+    try { if (window.opener) window.opener.postMessage({ type: 'AUDIO_CAPTURE_CANCELLED', requestId, language }, parentOrigin); } catch (err) {}
+    stopRecording(); stopTracks(); window.close();
+    $('status').className = 'status'; $('status').textContent = 'You can return to the application tab.';
+  }
+
+  function stopTracks() { if (stream) stream.getTracks().forEach(track => track.stop()); stream = null; }
+  function formatTime(seconds) { const n = Math.max(0, Number(seconds) || 0); return String(Math.floor(n / 60)).padStart(2, '0') + ':' + String(n % 60).padStart(2, '0'); }
+})();
+</script>
+</body>
+</html>
